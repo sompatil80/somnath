@@ -93,8 +93,6 @@ def home():
         total_tasks=total_tasks
     )
 
-    return f"Total Students: {student_count}"
-
 @app.route('/add_student/',methods=['GET','POST'])
 def add_student():
 
@@ -111,14 +109,14 @@ def add_student():
         cursor = connection.cursor()
 
         query = """
-        INSERT INTO student (
+        INSERT INTO students (
         first_name, 
-        last_name
+        last_name,
         gender,
         mobile_number,
         email,
         course_name,
-        admission_data
+        admission_date
         )
         VALUES (%s, %s, %s, %s, %s, %s, CURDATE())
         """
@@ -151,7 +149,7 @@ def student():
 
     cursor = connection.cursor(dictionary=True)
 
-    query = "SELECT * FROM students %s"
+    query = "SELECT * FROM students"
 
     cursor.execute(query)
 
@@ -169,11 +167,11 @@ def edit_student(student_id):
 
     cursor = connection.cursor(dictionary=True)
 
-    query = "SELECT * from student WHERE student_id = %s"
+    query = "SELECT * FROM students WHERE student_id = %s"
 
     cursor.execute(query, (student_id,))
 
-    cursor = cursor.fetchone()
+    student = cursor.fetchone()
 
     cursor.close()
     connection.close()
@@ -181,7 +179,7 @@ def edit_student(student_id):
     return render_template('edit_student.html',students=student)
 
 
-@app.route('/update_student/<int:student_id>')
+@app.route('/update_student/<int:student_id>', methods=['POST'])
 def update_student(student_id):
     first_name = request.form['first_name']
     last_name = request.form['last_name']
@@ -191,9 +189,9 @@ def update_student(student_id):
     cursor = connection.cursor(dictionary=True)
 
     query = """
-        UPDATE student
+        UPDATE students
         SET
-            first_name = %s
+            first_name = %s,
             last_name = %s
             WHERE student_id = %s
     """
@@ -221,7 +219,7 @@ def delete_student(student_id):
 
     cursor = connection.cursor()
 
-    query = "DELETE FROM student WHERE student_id = %s"
+    query = "DELETE FROM students WHERE student_id = %s"
 
     cursor.execute(query, (student_id,))
 
@@ -266,11 +264,11 @@ def save_attendance():
         INSERT INTO attendance
         (
             student_id,
-            attendance_data,
+            attendance_date,
             attendance_status
         )
         VALUES
-        (%S, CURDATE(), %S)
+        (%s, CURDATE(), %s)
     """
 
     cursor.execute(
@@ -299,7 +297,7 @@ def attendance_report():
         SELECT
 
             attendance.attendance_id,
-            attendance.attendance_data,
+            attendance.attendance_date,
             attendance.attendance_status,
 
             students.first_name,
